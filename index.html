@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>백소정 브랜드 리서치 — 임직원 설문</title>
+<style>
+  :root {
+    --ground:#FAF6EF; --surface:#FFFDF9; --panel:#F1EADD; --ink:#2A2320;
+    --ink-soft:#6E635A; --ink-faint:#9A8F84; --accent:#B0791F; --accent-ink:#8A5E13;
+    --accent-soft:#F3E7CC; --line:#E4DACB; --line-strong:#D6C9B4; --focus:#B0791F;
+    --good:#3F7D5B; --err:#B23B2E;
+    --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Consolas,monospace;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ground:#1D1915; --surface:#262019; --panel:#2E271F; --ink:#ECE3D4;
+      --ink-soft:#B6A996; --ink-faint:#857A6C; --accent:#DBA749; --accent-ink:#E7BE6A;
+      --accent-soft:#3A2F1C; --line:#362E24; --line-strong:#453A2C; --focus:#DBA749;
+      --good:#77B893; --err:#E08A7E; }
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  .wrap{max-width:720px;margin:0 auto;padding:clamp(24px,5vw,56px) clamp(18px,5vw,36px) 96px;}
+
+  /* header */
+  .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;}
+  h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.18;font-weight:800;letter-spacing:-.02em;
+    margin:.5em 0 .35em;text-wrap:balance;}
+  .lede{font-size:1.02rem;color:var(--ink-soft);max-width:60ch;margin:0;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .chip{font-family:var(--mono);font-size:.72rem;padding:5px 11px;border:1px solid var(--line-strong);
+    border-radius:999px;color:var(--ink-soft);background:var(--surface);white-space:nowrap;}
+  .chip b{color:var(--accent);font-weight:600;}
+  .intro{background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;
+    padding:clamp(18px,4vw,26px);margin:28px 0 8px;}
+  .intro ul{margin:0;padding-left:1.1em;color:var(--ink-soft);font-size:.94rem;}
+  .intro li{margin:5px 0;} .intro li b{color:var(--ink);}
+
+  /* section */
+  section{margin-top:40px;}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:8px;}
+  .sec-code{font-family:var(--mono);font-size:.76rem;font-weight:600;letter-spacing:.06em;
+    color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:5px;flex:none;}
+  .sec-title{font-size:1.12rem;font-weight:750;letter-spacing:-.01em;margin:0;}
+  .sec-note{font-size:.84rem;color:var(--ink-faint);margin:2px 0 0;}
+
+  /* question card */
+  .q{padding:18px 0;border-top:1px solid var(--line);}
+  .q:first-of-type{border-top:0;}
+  .q-label{font-size:1.01rem;font-weight:600;margin:0 0 4px;display:flex;gap:.5em;align-items:baseline;}
+  .q-num{font-family:var(--mono);color:var(--accent);font-weight:600;font-size:.9rem;flex:none;}
+  .q-help{font-size:.85rem;color:var(--ink-faint);margin:0 0 12px;}
+  .req{color:var(--err);font-weight:700;margin-left:.15em;}
+
+  /* inputs */
+  textarea,input[type=text],select{width:100%;font-family:var(--sans);font-size:.98rem;color:var(--ink);
+    background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:11px 13px;
+    line-height:1.55;transition:border-color .15s,box-shadow .15s;}
+  textarea{resize:vertical;min-height:76px;}
+  textarea::placeholder,input::placeholder{color:var(--ink-faint);}
+  textarea:focus,input:focus,select:focus{outline:none;border-color:var(--focus);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 22%,transparent);}
+  select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-faint) 50%),linear-gradient(135deg,var(--ink-faint) 50%,transparent 50%);
+    background-position:calc(100% - 20px) 55%,calc(100% - 15px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px;}
+
+  /* choice options (radio / checkbox) */
+  .opts{display:grid;gap:8px;}
+  .opts.row{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+  .opt{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--line);
+    border-radius:8px;padding:11px 13px;cursor:pointer;transition:border-color .15s,background .15s;font-size:.96rem;}
+  .opt:hover{border-color:var(--line-strong);}
+  .opt input{margin:2px 0 0;accent-color:var(--accent);width:16px;height:16px;flex:none;cursor:pointer;}
+  .opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}
+  .opt .mk{font-family:var(--mono);color:var(--accent);font-weight:700;margin-right:2px;}
+
+  /* scale */
+  .scale{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .scale-lab{font-size:.8rem;color:var(--ink-faint);font-family:var(--mono);}
+  .scale-opts{display:flex;gap:6px;}
+  .scale-opts label{cursor:pointer;}
+  .scale-opts input{position:absolute;opacity:0;width:0;height:0;}
+  .scale-opts .pip{display:grid;place-items:center;width:42px;height:42px;border:1.5px solid var(--line-strong);
+    border-radius:10px;font-family:var(--mono);font-size:.95rem;color:var(--ink-soft);background:var(--surface);
+    transition:all .15s;}
+  .scale-opts label:hover .pip{border-color:var(--accent);}
+  .scale-opts input:checked + .pip{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+  .scale-opts input:focus-visible + .pip{box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 30%,transparent);}
+
+  /* branch fieldset */
+  .branch{border:1px dashed var(--line-strong);border-radius:10px;padding:6px 18px 10px;margin-top:6px;
+    background:color-mix(in srgb,var(--panel) 45%,transparent);}
+  .branch[hidden]{display:none;}
+  .branch-tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;padding-top:12px;}
+
+  /* submit */
+  .actions{margin-top:40px;}
+  .note-inline{font-size:.86rem;color:var(--ink-faint);margin:0 0 14px;}
+  button.submit{font-family:var(--sans);font-size:1.02rem;font-weight:700;color:#fff;background:var(--accent);
+    border:0;border-radius:10px;padding:15px 30px;cursor:pointer;transition:transform .1s,filter .15s;width:100%;}
+  button.submit:hover{filter:brightness(1.06);}
+  button.submit:active{transform:translateY(1px);}
+  button.submit:disabled{opacity:.55;cursor:not-allowed;}
+  .formerr{color:var(--err);font-size:.92rem;margin:14px 0 0;font-weight:600;display:none;}
+  .formerr.show{display:block;}
+  .q.invalid textarea,.q.invalid input[type=text],.q.invalid select{border-color:var(--err);}
+  .q.invalid .opts .opt{border-color:var(--err);}
+
+  /* thank you */
+  #done{display:none;text-align:center;padding:60px 0;}
+  #done.show{display:block;}
+  #done .mark{width:66px;height:66px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+    display:grid;place-items:center;margin:0 auto 22px;font-size:2rem;}
+  #done h2{font-size:1.5rem;font-weight:800;margin:0 0 10px;}
+  #done p{color:var(--ink-soft);max-width:44ch;margin:0 auto;}
+
+  footer{margin-top:48px;font-family:var(--mono);font-size:.72rem;color:var(--ink-faint);text-align:center;letter-spacing:.02em;}
+  .config-warn{background:#B23B2E;color:#fff;padding:14px 18px;border-radius:8px;margin-bottom:24px;font-size:.9rem;display:none;}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="configWarn" class="config-warn">⚠️ config.js 의 Supabase 주소·키가 아직 설정되지 않았습니다. 응답이 저장되지 않아요. (관리자에게 알려주세요)</div>
+
+  <form id="survey" novalidate>
+    <header>
+      <div class="eyebrow">전사 브랜드 리서치 · ㈜씨앤비 마케팅팀 · 2026</div>
+      <h1>백소정, 우리는 백소정을<br>어떻게 보고 있을까요?</h1>
+      <p class="lede">백소정이 빠르게 성장해온 지금, 우리 안에서 백소정을 각자 어떻게 느끼는지 모아보려 합니다. 브랜드는 매일 백소정을 만드는 우리 안에서 먼저 자라니까요.</p>
+      <div class="chips">
+        <span class="chip"><b>익명</b> · 부서·직급만</span>
+        <span class="chip"><b>10분</b> 내외</span>
+        <span class="chip"><b>정답 없음</b> · 솔직하게</span>
+      </div>
+    </header>
+
+    <div class="intro">
+      <ul>
+        <li><b>정답이 없는 설문이에요.</b> 멋진 답보다 솔직한 생각이 가장 중요합니다.</li>
+        <li><b>익명입니다.</b> 소속 부서·직급만 여쭙고, 개인은 특정하지 않아요.</li>
+        <li>몇 문항은 <b>잠깐 생각이 필요</b>할 수 있어요 — 그게 이 설문의 핵심이에요.</li>
+        <li>결과는 브랜드를 다듬는 데만 쓰고, <b>부서·개인 평가에는 절대 쓰지 않습니다.</b></li>
+      </ul>
+    </div>
+
+    <!-- S0 -->
+    <section>
+      <div class="sec-head"><span class="sec-code">S0</span><div><h2 class="sec-title">당신은 누구신가요</h2><p class="sec-note">부서별로 답을 나눠 보기 위한 최소 정보예요. 개인은 특정하지 않습니다.</p></div></div>
+      <div class="q" data-required="dept">
+        <p class="q-label"><span class="q-num">Q0-1</span>소속 부서<span class="req">*</span></p>
+        <select id="dept" name="dept" aria-label="소속 부서">
+          <option value="">선택해 주세요</option>
+          <option>경영기획부</option><option>마케팅팀</option><option>가맹사업부</option>
+          <option>기업부설연구소</option><option>디자인팀</option><option>경영지원부</option>
+        </select>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q0-2</span>직급</p>
+        <select id="role" name="role" aria-label="직급">
+          <option value="">선택(선택사항)</option>
+          <option>사원·주임</option><option>대리</option><option>과장·차장</option><option>부장·본부장</option><option>임원</option>
+        </select>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q0-3</span>백소정 근속</p>
+        <select id="tenure" name="tenure" aria-label="근속">
+          <option value="">선택(선택사항)</option>
+          <option>1년 미만</option><option>1–3년</option><option>3–5년</option><option>5년 이상</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- S1 -->
+    <section>
+      <div class="sec-head"><span class="sec-code">S1</span><h2 class="sec-title">백소정은 무엇인가</h2></div>
+      <div class="q" data-required="q1_intro">
+        <p class="q-label"><span class="q-num">Q1</span>처음 만난 사람이 “백소정이 무슨 브랜드예요?”라고 물으면, 실제로 뭐라고 답하시겠어요?<span class="req">*</span></p>
+        <p class="q-help">한 문장으로, 말하듯이 편하게.</p>
+        <textarea id="q1_intro" placeholder="예: 그냥 돈카츠집인데, 튀김이 안 느끼해서 부담 없이 자주 가는 곳이요."></textarea>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q2</span>백소정은 무슨 ‘집’에 가장 가깝나요?</p>
+        <div class="opts" data-name="q2_category">
+          <label class="opt"><input type="radio" name="q2_category" value="돈카츠집">돈카츠집</label>
+          <label class="opt"><input type="radio" name="q2_category" value="일식당">일식당</label>
+          <label class="opt"><input type="radio" name="q2_category" value="면·분식집">면·분식집</label>
+          <label class="opt"><input type="radio" name="q2_category" value="온 일행이 각자 골라 먹는 집">온 일행이 각자 골라 먹는 집</label>
+          <label class="opt"><input type="radio" name="q2_category" value="기타">기타(아래에 적기)</label>
+        </div>
+        <input type="text" id="q2_other" placeholder="기타를 고르셨다면 여기에" style="margin-top:8px;">
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q3</span>백소정이 만약 ‘사람’이라면 어떤 사람일까요?</p>
+        <p class="q-help">나이대·성격·말투를 상상해서 자유롭게. (선택)</p>
+        <textarea id="q3_persona" placeholder="예: 말수는 적은데 챙길 건 조용히 다 챙기는 30대 후반…"></textarea>
+      </div>
+    </section>
+
+    <!-- S2 -->
+    <section>
+      <div class="sec-head"><span class="sec-code">S2</span><h2 class="sec-title">무엇이 백소정을 백소정답게 하는가</h2></div>
+      <div class="q" data-required="q4_choice">
+        <p class="q-label"><span class="q-num">Q4</span>백소정이 앞으로 딱 하나만 끝까지 지켜야 한다면, 어느 쪽인가요?<span class="req">*</span></p>
+        <div class="opts" data-name="q4_choice">
+          <label class="opt"><input type="radio" name="q4_choice" value="맛"><span><span class="mk">ⓐ</span>튀김인데도 안 느끼한, 그 ‘맛’</span></label>
+          <label class="opt"><input type="radio" name="q4_choice" value="분위기"><span><span class="mk">ⓑ</span>부담 없이 편하게 오는, 그 ‘분위기’</span></label>
+        </div>
+        <textarea id="q4_reason" placeholder="그렇게 고른 이유를 적어주세요." style="margin-top:10px;"></textarea>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q5</span>백소정과 가장 비슷하다고 느끼는 다른 브랜드 하나와, 왜 비슷한지.</p>
+        <p class="q-help">외식이든 아니든 상관없어요. (선택)</p>
+        <textarea id="q5_brand" placeholder="예: OOO — 특별하진 않은데 실패가 없어서 자꾸 가게 되는 점이 비슷해요."></textarea>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q6</span>손님이 다른 돈카츠·일식집 다 놔두고 굳이 ‘백소정’을 고르는 진짜 이유는 뭘까요?</p>
+        <textarea id="q6_choose" placeholder="(선택) 떠오르는 대로."></textarea>
+      </div>
+    </section>
+
+    <!-- S3 -->
+    <section>
+      <div class="sec-head"><span class="sec-code">S3</span><h2 class="sec-title">누가, 왜 다시 오는가</h2></div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q7</span>백소정에 가장 잘 어울리는 손님 조합은? <span class="q-help" style="display:inline;margin:0;">(최대 2개)</span></p>
+        <div class="opts row" data-name="q7_combo" data-max="2">
+          <label class="opt"><input type="checkbox" name="q7_combo" value="혼자">혼자</label>
+          <label class="opt"><input type="checkbox" name="q7_combo" value="연인·부부">연인·부부</label>
+          <label class="opt"><input type="checkbox" name="q7_combo" value="친구끼리">친구끼리</label>
+          <label class="opt"><input type="checkbox" name="q7_combo" value="부모와 아이">부모와 아이</label>
+          <label class="opt"><input type="checkbox" name="q7_combo" value="회식·단체">회식·단체</label>
+        </div>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q8</span>손님이 백소정에 ‘다시’ 오는 이유는 뭐라고 보세요?</p>
+        <p class="q-help">첫 방문 말고, 재방문 이유로요. (선택)</p>
+        <textarea id="q8_return" placeholder="떠오르는 대로."></textarea>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q9</span>백소정이 내일 갑자기 사라진다면, 단골 손님이 가장 아쉬워할 딱 한 가지는?</p>
+        <textarea id="q9_miss" placeholder="(선택)"></textarea>
+      </div>
+    </section>
+
+    <!-- S4 -->
+    <section>
+      <div class="sec-head"><span class="sec-code">S4</span><h2 class="sec-title">우리는 같은 백소정을 보고 있는가</h2></div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q10</span>“우리 회사 사람들은 백소정이 어떤 브랜드인지 한 방향으로 이해하고 있다.”</p>
+        <div class="scale">
+          <span class="scale-lab">전혀 아니다</span>
+          <div class="scale-opts" role="radiogroup" aria-label="Q10">
+            <label><input type="radio" name="q10_align" value="1"><span class="pip">1</span></label>
+            <label><input type="radio" name="q10_align" value="2"><span class="pip">2</span></label>
+            <label><input type="radio" name="q10_align" value="3"><span class="pip">3</span></label>
+            <label><input type="radio" name="q10_align" value="4"><span class="pip">4</span></label>
+            <label><input type="radio" name="q10_align" value="5"><span class="pip">5</span></label>
+          </div>
+          <span class="scale-lab">매우 그렇다</span>
+        </div>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q11</span>“나는 백소정이 앞으로 나아가야 할 방향을 분명히 알고 있다.”</p>
+        <div class="scale">
+          <span class="scale-lab">전혀 아니다</span>
+          <div class="scale-opts" role="radiogroup" aria-label="Q11">
+            <label><input type="radio" name="q11_direction" value="1"><span class="pip">1</span></label>
+            <label><input type="radio" name="q11_direction" value="2"><span class="pip">2</span></label>
+            <label><input type="radio" name="q11_direction" value="3"><span class="pip">3</span></label>
+            <label><input type="radio" name="q11_direction" value="4"><span class="pip">4</span></label>
+            <label><input type="radio" name="q11_direction" value="5"><span class="pip">5</span></label>
+          </div>
+          <span class="scale-lab">매우 그렇다</span>
+        </div>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q12</span>위 두 문항 중 하나라도 ‘보통(3)’ 이하로 느끼셨다면, 왜 그런가요?</p>
+        <textarea id="q12_align_why" placeholder="(선택)"></textarea>
+      </div>
+    </section>
+
+    <!-- S5 branch -->
+    <section>
+      <div class="sec-head"><span class="sec-code">S5</span><div><h2 class="sec-title">우리 부서의 눈으로 본 백소정</h2><p class="sec-note">소속 부서에 따라 이 자리에 두 문항이 나타납니다. (Q0-1을 먼저 선택해 주세요)</p></div></div>
+      <div id="branchHost">
+        <p id="branchPlaceholder" class="q-help" style="padding:14px 0;">↑ 위에서 소속 부서를 선택하면 여기에 부서별 문항이 표시됩니다.</p>
+
+        <fieldset class="branch" data-dept="경영기획부" hidden>
+          <div class="branch-tag">경영기획부</div>
+          <div class="q"><p class="q-label">200개 규모로 다시 크려면, 브랜드가 지금과 무엇이 가장 달라져야 할까요?</p><textarea data-branch="b1"></textarea></div>
+          <div class="q"><p class="q-label">성장의 가장 큰 걸림돌은? 이유 한 줄.</p>
+            <div class="opts row" data-name="bopt"><label class="opt"><input type="radio" name="b_경영기획부" value="메뉴·맛">메뉴·맛</label><label class="opt"><input type="radio" name="b_경영기획부" value="브랜드 인식">브랜드 인식</label><label class="opt"><input type="radio" name="b_경영기획부" value="운영·시스템">운영·시스템</label><label class="opt"><input type="radio" name="b_경영기획부" value="입지·상권">입지·상권</label></div>
+            <textarea data-branch="b2" placeholder="고른 이유 한 줄" style="margin-top:8px;"></textarea></div>
+        </fieldset>
+
+        <fieldset class="branch" data-dept="마케팅팀" hidden>
+          <div class="branch-tag">마케팅팀</div>
+          <div class="q"><p class="q-label">외부 인식(손님·검색·SNS)과 ‘실제 백소정’ 사이의 가장 큰 오해 한 가지는?</p><textarea data-branch="b1"></textarea></div>
+          <div class="q"><p class="q-label">손님 머릿속에 ‘단어 하나’로 심는다면? 그 이유는?</p><textarea data-branch="b2"></textarea></div>
+        </fieldset>
+
+        <fieldset class="branch" data-dept="가맹사업부" hidden>
+          <div class="branch-tag">가맹사업부</div>
+          <div class="q"><p class="q-label">가맹점주들이 브랜드에 대해 가장 자주 하는 말(칭찬이든 아쉬움이든)은?</p><textarea data-branch="b1"></textarea></div>
+          <div class="q"><p class="q-label">본사가 보는 백소정과 가맹 현장이 느끼는 백소정, 갭이 있다면 어디인가요?</p><textarea data-branch="b2"></textarea></div>
+        </fieldset>
+
+        <fieldset class="branch" data-dept="기업부설연구소" hidden>
+          <div class="branch-tag">기업부설연구소</div>
+          <div class="q"><p class="q-label">‘이건 백소정다운 맛이 아니다’ 싶은, 넘으면 안 되는 선이 있다면?</p><textarea data-branch="b1"></textarea></div>
+          <div class="q"><p class="q-label">브랜드를 가장 잘 대표하는 ‘얼굴’ 메뉴 하나와 이유는?</p><textarea data-branch="b2"></textarea></div>
+        </fieldset>
+
+        <fieldset class="branch" data-dept="디자인팀" hidden>
+          <div class="branch-tag">디자인팀</div>
+          <div class="q"><p class="q-label">지금 로고·색·매장 공간이 ‘백소정다움’을 잘 담나요? 가장 안 맞는 요소 하나는?</p><textarea data-branch="b1"></textarea></div>
+          <div class="q"><p class="q-label">백소정을 ‘색 하나’로 표현하면 무슨 색이고, 왜죠?</p><textarea data-branch="b2"></textarea></div>
+        </fieldset>
+
+        <fieldset class="branch" data-dept="경영지원부" hidden>
+          <div class="branch-tag">경영지원부</div>
+          <div class="q"><p class="q-label">내부 직원 입장에서 ‘백소정에서 일한다’는 건 어떤 느낌인가요?</p><textarea data-branch="b1"></textarea></div>
+          <div class="q"><p class="q-label">밖에 말하는 백소정 vs 안에서 일하며 느끼는 백소정, 다르다면 어디가?</p><textarea data-branch="b2"></textarea></div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- S6 -->
+    <section>
+      <div class="sec-head"><span class="sec-code">S6</span><h2 class="sec-title">3년 뒤, 그리고 하고 싶은 말</h2></div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q13</span>3년 뒤 백소정이 지금과 딱 하나 달라져 있다면, 무엇이 달라져 있으면 좋겠어요?</p>
+        <textarea id="q13_future" placeholder="(선택)"></textarea>
+      </div>
+      <div class="q">
+        <p class="q-label"><span class="q-num">Q14</span>백소정 브랜드에 대해 평소 하고 싶었던 말, 자유롭게 남겨주세요.</p>
+        <textarea id="q14_free" placeholder="(선택)"></textarea>
+      </div>
+    </section>
+
+    <div class="actions">
+      <p class="note-inline">별표(<span class="req">*</span>) 문항만 필수예요. 나머지는 떠오르는 것만 적으셔도 됩니다.</p>
+      <button type="submit" class="submit" id="submitBtn">응답 제출하기</button>
+      <p class="formerr" id="formerr"></p>
+    </div>
+  </form>
+
+  <div id="done">
+    <div class="mark">✓</div>
+    <h2>고맙습니다. 잘 받았어요.</h2>
+    <p>오늘 남겨주신 생각은 백소정이 다음 걸음을 정하는 데 그대로 쓰입니다. 브랜드는 결국 우리가 매일 만드는 것이니까요. — 마케팅팀 드림</p>
+  </div>
+
+  <footer>㈜씨앤비 마케팅팀 · 백소정 전사 브랜드 리서치 · 2026</footer>
+</div>
+
+<script src="config.js"></script>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  const cfg = window.SUPABASE_CONFIG || {};
+  const configured = cfg.url && cfg.anonKey && !cfg.url.includes('YOUR-PROJECT');
+  if (!configured) document.getElementById('configWarn').style.display = 'block';
+  const supabase = configured ? createClient(cfg.url, cfg.anonKey) : null;
+
+  const form = document.getElementById('survey');
+  const deptSel = document.getElementById('dept');
+  const branches = [...document.querySelectorAll('.branch')];
+  const placeholder = document.getElementById('branchPlaceholder');
+  const errBox = document.getElementById('formerr');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // 이미 응답했는지 (같은 브라우저)
+  if (localStorage.getItem('bsj_survey_done')) showDone();
+
+  // 부서 선택 → 해당 분기만 노출
+  deptSel.addEventListener('change', () => {
+    const d = deptSel.value;
+    let shown = false;
+    branches.forEach(fs => {
+      const match = fs.dataset.dept === d;
+      fs.hidden = !match;
+      // 숨긴 분기의 입력은 값 비우기(오염 방지)
+      if (!match) fs.querySelectorAll('textarea').forEach(t => t.value = '');
+      if (!match) fs.querySelectorAll('input').forEach(i => { i.checked = false; });
+      if (match) shown = true;
+    });
+    placeholder.style.display = shown ? 'none' : 'block';
+    clearInvalid(deptSel.closest('.q'));
+  });
+
+  // 체크박스 최대 2개
+  document.querySelectorAll('.opts[data-max]').forEach(box => {
+    const max = +box.dataset.max;
+    box.addEventListener('change', () => {
+      const checked = box.querySelectorAll('input:checked');
+      if (checked.length > max) {
+        // 가장 먼저 체크된 것 해제
+        checked[0].checked = false;
+      }
+    });
+  });
+
+  function val(id){ const el = document.getElementById(id); return el && el.value.trim() ? el.value.trim() : null; }
+  function radio(name){ const el = form.querySelector(`input[name="${name}"]:checked`); return el ? el.value : null; }
+  function checks(name){ return [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(e=>e.value); }
+  function clearInvalid(q){ if(q) q.classList.remove('invalid'); }
+
+  function validate(){
+    const missing = [];
+    form.querySelectorAll('.q[data-required]').forEach(q => q.classList.remove('invalid'));
+    // dept
+    if(!deptSel.value){ markInvalid('dept','소속 부서'); missing.push('소속 부서'); }
+    if(!val('q1_intro')){ markInvalid('q1_intro','Q1'); missing.push('Q1'); }
+    if(!radio('q4_choice')){ markInvalidName('q4_choice','Q4'); missing.push('Q4 선택'); }
+    if(radio('q4_choice') && !val('q4_reason')){ markInvalid('q4_reason','Q4 이유'); missing.push('Q4 이유'); }
+    return missing;
+  }
+  function markInvalid(id, label){ const el=document.getElementById(id); if(el) el.closest('.q').classList.add('invalid'); }
+  function markInvalidName(name){ const el=form.querySelector(`[name="${name}"]`); if(el) el.closest('.q').classList.add('invalid'); }
+
+  function q2value(){
+    const r = radio('q2_category');
+    if(r === '기타'){ const o = val('q2_other'); return o ? `기타: ${o}` : '기타'; }
+    return r;
+  }
+
+  function collectBranch(){
+    const d = deptSel.value;
+    const fs = branches.find(b => b.dataset.dept === d && !b.hidden);
+    if(!fs) return null;
+    const b1 = fs.querySelector('[data-branch="b1"]');
+    const b2 = fs.querySelector('[data-branch="b2"]');
+    const bradio = fs.querySelector('input[type="radio"]:checked');
+    const out = {};
+    if(b1 && b1.value.trim()) out.b1 = b1.value.trim();
+    if(bradio) out.b1_choice = bradio.value;
+    if(b2 && b2.value.trim()) out.b2 = b2.value.trim();
+    return Object.keys(out).length ? out : null;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errBox.classList.remove('show');
+    const missing = validate();
+    if(missing.length){
+      errBox.textContent = `아직 필수 항목이 비어 있어요: ${missing.join(', ')}`;
+      errBox.classList.add('show');
+      form.querySelector('.q.invalid')?.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+
+    const payload = {
+      dept: deptSel.value,
+      role: val('role'), tenure: val('tenure'),
+      q1_intro: val('q1_intro'),
+      q2_category: q2value(),
+      q3_persona: val('q3_persona'),
+      q4_choice: radio('q4_choice'), q4_reason: val('q4_reason'),
+      q5_brand: val('q5_brand'), q6_choose: val('q6_choose'),
+      q7_combo: checks('q7_combo'),
+      q8_return: val('q8_return'), q9_miss: val('q9_miss'),
+      q10_align: radio('q10_align') ? +radio('q10_align') : null,
+      q11_direction: radio('q11_direction') ? +radio('q11_direction') : null,
+      q12_align_why: val('q12_align_why'),
+      branch: collectBranch(),
+      q13_future: val('q13_future'), q14_free: val('q14_free'),
+      meta: { ua: navigator.userAgent.slice(0,120), submitted_at: new Date().toISOString() }
+    };
+
+    if(!supabase){
+      // 설정 전 미리보기 모드 — 저장 없이 완료 화면만
+      console.log('preview payload', payload);
+      finish();
+      return;
+    }
+
+    submitBtn.disabled = true; submitBtn.textContent = '제출 중…';
+    const { error } = await supabase.from('survey_responses').insert(payload);
+    if(error){
+      submitBtn.disabled = false; submitBtn.textContent = '응답 제출하기';
+      errBox.textContent = '저장 중 문제가 생겼어요. 잠시 후 다시 시도하거나 마케팅팀에 알려주세요.';
+      errBox.classList.add('show');
+      console.error(error);
+      return;
+    }
+    finish();
+  });
+
+  function finish(){ localStorage.setItem('bsj_survey_done','1'); showDone(); }
+  function showDone(){ form.style.display='none'; document.getElementById('configWarn').style.display='none';
+    const d=document.getElementById('done'); d.classList.add('show'); window.scrollTo({top:0,behavior:'smooth'}); }
+</script>
+</body>
+</html>
